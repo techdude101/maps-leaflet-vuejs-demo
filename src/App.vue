@@ -17,6 +17,8 @@
         :attribution="attribution"
       />
       <l-image-overlay :url="overlayURL" :bounds="overlayBounds" :visible="showOverlay"></l-image-overlay>
+      <l-rectangle :bounds="overlayBounds" :l-style="rectangle.style"></l-rectangle>
+      <!-- <l-image-overlay :url="overlayURL" :bounds="overlayBounds" :visible="false"></l-image-overlay> -->
     </l-map>
     <!-- TODO: Upload image & restrict file types (disable show "All files") -->
       <!-- <image-upload></image-upload> -->
@@ -40,7 +42,7 @@ import { latLng } from "leaflet";
 import logo from "./assets/logo.png";
 import overlayMap from "./assets/Cycle_Route_Map_Belfast_City.png";
 import overlayMapNoBackground from "./assets/Cycle_Route_Map_Belfast_City_nobg.png";
-import { LMap, LTileLayer, LImageOverlay } from "vue2-leaflet";
+import { LMap, LTileLayer, LImageOverlay, LRectangle } from "vue2-leaflet";
 // import ImageUpload from './ImageUpload.vue';
 import Joystick from './Joystick.vue';
 
@@ -50,11 +52,16 @@ export default {
     LMap,
     LTileLayer,
     LImageOverlay,
+    LRectangle,
     // ImageUpload,
     Joystick
   },
   data() {
     return {
+      rectangle: {
+        bounds: [[54.60222908456487, -5.927228491440711], [54.5969999250192, -5.908268890668636]],
+        style: { color: 'red', weight: 1, fillOpacity: 0.1 }
+      },
       selected: overlayMap,
       options: [
         { value: overlayMap, text: 'Cycle route' },
