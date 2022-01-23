@@ -1,12 +1,7 @@
 <template>
-
-<div style="height: 60vh; width: 80%; margin: 0 auto">
-    <div>
-      <input type="text" placeholder="latitude, longitude" v-model="overlayNorthEastBounds">
-      <input type="text" placeholder="latitude, longitude" value="overlaySouthWestBounds" v-model="overlaySouthWestBounds">
-      <button @click="updateOverlayBounds">Update</button>
-    </div>
-    <br />
+<div class="text-center" style="height: 60vh; width: 80%; margin: 1rem auto; padding: 1rem 0rem;">
+  <h1 class="text-center" style="padding: 1rem;">Leaflet Map Overlay Demo</h1>
+  <b-form-select class="select" v-model="selected" :options="options" @change="handleOverlayChange"></b-form-select>
     <l-map
       v-if="showMap"
       :zoom="zoom"
@@ -23,21 +18,19 @@
       />
       <l-image-overlay :url="overlayURL" :bounds="overlayBounds" :visible="showOverlay"></l-image-overlay>
     </l-map>
-    <h2 style="margin: 0 auto; text-align: center">Centre is at {{ currentCenter }} and the zoom is: {{ currentZoom }}</h2>
-    <br />
-    <h2 style="margin: 0 auto; text-align: center">Bounds: {{ `${currentBounds._southWest}, ${currentBounds._northEast}` }}</h2>
-    <br />
-    <h2 style="margin: 0 auto; text-align: center">Overlay bounds: {{ overlayBounds }}</h2>
-    <br />
-    <center>
-      <button @click="handleClick">Show / Hide Overlay</button>
-      <br />
-      <button @click="moveLeft">Left</button>
-      <button @click="moveRight">Right</button>
-      <br />
-      <input type="checkbox" v-model="fineAdjustment" name="fine-adjustment" />
-      <label for="fine-adjustment"> Enable Fine Adjustment</label>
-    </center>
+    <!-- TODO: Upload image & restrict file types (disable show "All files") -->
+      <!-- <image-upload></image-upload> -->
+      <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+        <h1>Position</h1>
+      <joystick @updatePosition="handleUpdatePosition"></joystick>
+      </div>
+      <b-form-checkbox
+        v-b-tooltip.hover.bottom title="Enable or disable fine adjustment of map overlay"
+        id="fine-adjustment"
+        v-model="fineAdjustment"
+      >
+      &nbsp;Fine adjustment
+      </b-form-checkbox>
   </div>
 
 </template>
@@ -46,20 +39,27 @@
 import { latLng } from "leaflet";
 import logo from "./assets/logo.png";
 import overlayMap from "./assets/Cycle_Route_Map_Belfast_City.png";
+import overlayMapNoBackground from "./assets/Cycle_Route_Map_Belfast_City_nobg.png";
 import { LMap, LTileLayer, LImageOverlay } from "vue2-leaflet";
+// import ImageUpload from './ImageUpload.vue';
+import Joystick from './Joystick.vue';
 
 export default {
-  name: "Example",
+  name: "LeafletDemo",
   components: {
     LMap,
     LTileLayer,
     LImageOverlay,
-    // LMarker,
-    // LPopup,
-    // LTooltip
+    // ImageUpload,
+    Joystick
   },
   data() {
     return {
+      selected: overlayMap,
+      options: [
+        { value: overlayMap, text: 'Cycle route' },
+        { value: overlayMapNoBackground, text: 'Cycle route no background' },
+      ],
       fineAdjustment: false,
       logo: logo,
       zoom: 13,
@@ -83,6 +83,16 @@ export default {
     };
   },
   methods: {
+    handleOverlayChange() {
+      this.overlayURL = this.selected;
+    },
+    handleUpdatePosition(direction = "left") {
+      if (this.fineAdjustment) {
+        this.overlayBounds = this.moveOverlay(direction, 9999);  
+      } else {
+        this.overlayBounds = this.moveOverlay(direction, 500);
+      }
+    },
     updateOverlayBounds() {
       // Convert text to number "12.34,56.78" -> 12.34,56.78
       const north = Number(this.overlayNorthEastBounds.split(',')[0]);
@@ -129,13 +139,6 @@ export default {
       } else {
         this.overlayBounds = this.moveOverlay("left", 500);
       }
-      // let north = this.overlayBounds[0][0];
-      // let east = this.overlayBounds[0][1];
-      // let south = this.overlayBounds[1][0];
-      // let west = this.overlayBounds[1][1];
-      // east -= 1 / (this.currentZoom * 100);
-      // west -= 1 / (this.currentZoom * 100);
-      // this.overlayBounds = [[north, east], [south, west]];
     },
     moveRight() {
       if (this.fineAdjustment) {
@@ -143,13 +146,6 @@ export default {
       } else {
         this.overlayBounds = this.moveOverlay("right", 500);
       }
-      // let north = this.overlayBounds[0][0];
-      // let east = this.overlayBounds[0][1];
-      // let south = this.overlayBounds[1][0];
-      // let west = this.overlayBounds[1][1];
-      // east += 1 / (this.currentZoom * 20);
-      // west += 1 / (this.currentZoom * 20);
-      // this.overlayBounds = [[north, east], [south, west]];
     },
     boundsUpdate(bounds) {
       this.currentBounds = bounds;
@@ -162,16 +158,13 @@ export default {
       this.overlayNorthEastBounds = this.overlayBounds[0];
       this.overlaySouthWestBounds = this.overlayBounds[1];
     },
-    showLongText() {
-      this.showParagraph = !this.showParagraph;
-    },
-    innerClick() {
-      alert("Click!");
-    }
   }
 };
 </script>
 
 <style>
-
+.select {
+  font-size: 20px;
+  margin: 1em;
+}
 </style>
